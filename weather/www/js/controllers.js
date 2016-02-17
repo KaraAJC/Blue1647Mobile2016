@@ -1,28 +1,39 @@
-angular.module('starter.controllers', [])
+angular.module('starter.controllers', ['ionic'])
+.constant('FORECASTIO_KEY', 'dadde6fc6e9923ce62d62aeb5b1bb490')
+.controller('HomeCtrl', function($scope,$state,Weather,DataStore) {
+    //read default settings into scope
+    console.log('inside home');
+    $scope.city  = DataStore.city;
+    var latitude  =  DataStore.latitude;
+    var longitude = DataStore.longitude;
 
-.controller('DashCtrl', function($scope) {})
+    //call getCurrentWeather method in factory ‘Weather’
+    Weather.getCurrentWeather(latitude,longitude).then(function(resp) {
+      $scope.current = resp.data;
+      console.log('GOT CURRENT', $scope.current);
+      //debugger;
+    }, function(error) {
+      alert('Unable to get current conditions');
+      console.error(error);
+    });
 
-.controller('ChatsCtrl', function($scope, Chats) {
-  // With the new view caching in Ionic, Controllers are only called
-  // when they are recreated or on app start, instead of every page change.
-  // To listen for when this page is active (for example, to refresh data),
-  // listen for the $ionicView.enter event:
-  //
-  //$scope.$on('$ionicView.enter', function(e) {
-  //});
-
-  $scope.chats = Chats.all();
-  $scope.remove = function(chat) {
-    Chats.remove(chat);
-  };
 })
+.controller('LocationsCtrl', function($scope,$state, Cities,DataStore) {
+  $scope.cities = Cities.all();
 
-.controller('ChatDetailCtrl', function($scope, $stateParams, Chats) {
-  $scope.chat = Chats.get($stateParams.chatId);
+  $scope.changeCity = function(cityId) {
+    //get lat and longitude for seleted location
+    var lat  = $scope.cities[cityId].lat; //latitude
+    var lgn  = $scope.cities[cityId].lgn; //longitude
+    var city = $scope.cities[cityId].name; //city name
+
+    DataStore.setCity(city);
+    DataStore.setLatitude(lat);
+    DataStore.setLongitude(lgn);
+
+    $state.go('tab.home');
+  }
 })
-
-.controller('AccountCtrl', function($scope) {
-  $scope.settings = {
-    enableFriends: true
-  };
+.controller('SettingsCtrl', function($scope) {
+    //manages app settings
 });
